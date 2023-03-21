@@ -1,0 +1,29 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(SpeechCommands)
+
+set(CMAKE_CXX_STANDARD 11)
+set(TARGET_NAME speech_commands)
+
+find_library(WHISPER_LIBRARIES whisper REQUIRED)
+find_path(WHISPER_INCLUDE_DIRS NAMES whisper.h REQUIRED)
+
+string(STRIP "${WHISPER_INCLUDE_DIRS}" WHISPER_INCLUDE_DIRS)
+
+message(STATUS "WHISPER_INCLUDE_DIRS = ${WHISPER_INCLUDE_DIRS}")
+message(STATUS "WHISPER_LIBRARIES = ${WHISPER_LIBRARIES}")
+
+find_package(SDL2 REQUIRED)
+
+string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
+
+message(STATUS "SDL2_INCLUDE_DIRS = ${SDL2_INCLUDE_DIRS}")
+message(STATUS "SDL2_LIBRARIES = ${SDL2_LIBRARIES}")
+
+add_executable(${TARGET_NAME} command.cpp common-sdl.cpp common.cpp)
+
+target_include_directories(${TARGET_NAME} PUBLIC ${WHISPER_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${SDL2_LIBRARIES} ${WHISPER_LIBRARIES})
