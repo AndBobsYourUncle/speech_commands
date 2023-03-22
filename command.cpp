@@ -21,6 +21,13 @@
 #include <vector>
 #include <map>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
+
+using namespace curlpp::options;
+
 // command-line parameters
 struct whisper_params {
     int32_t n_threads  = std::min(4, (int32_t) std::thread::hardware_concurrency());
@@ -499,6 +506,40 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
                 //fprintf(stdout, "command size: %i\n", command_length);
 
                 if ((sim > 0.7f) && (command.size() > 0)) {
+                    try
+                    {
+                        CURL *curl = curl_easy_init();
+                        if(curl) {
+                          char *output = curl_easy_escape(curl, command.c_str(), command.size());
+                          if(output) {
+                            printf("Encoded: %s\n", output);
+
+                            std::string outputString = output;
+
+                            curlpp::Cleanup cleaner;
+                            curlpp::Easy request;
+
+                            // Setting the URL to retrive.
+                            request.setOpt(new curlpp::options::Url("http://127.0.0.1:8080/get_prompt_response?prompt="+outputString));
+
+                            std::cout << request << std::endl;
+
+                            curl_free(output);
+                          }
+                          curl_easy_cleanup(curl);
+                        }
+                    }
+
+                    catch(curlpp::RuntimeError & e)
+                    {
+                        std::cout << e.what() << std::endl;
+                    }
+
+                    catch(curlpp::LogicError & e)
+                    {
+                        std::cout << e.what() << std::endl;
+                    }
+
                     fprintf(stdout, "%s: Command '%s%s%s', (t = %d ms)\n", __func__, "\033[1m", command.c_str(), "\033[0m", (int) t_ms);
                 }
 
