@@ -25,9 +25,7 @@ RUN git clone https://github.com/ggerganov/whisper.cpp && \
     cd ../ && \
     rm -r whisper.cpp
 
-WORKDIR /root
-
-RUN git clone https://github.com/AndBobsYourUncle/speech_commands.git
+COPY . /root/speech_commands
 
 WORKDIR /root/speech_commands
 
