@@ -12,4 +12,4 @@ signalListener() {
     done
 }
 
-signalListener ./speech_commands -c CAPTURE_DEVICE_ID -pms PROMPT_DURATION -cms COMMAND_DURATION -p PROMPT -t THREADS -g GET_ENDPOINT
+signalListener ./speech_commands -c $CAPTURE_DEVICE_ID -pms $PROMPT_DURATION -cms $COMMAND_DURATION -p $PROMPT -t $THREADS -g $GET_ENDPOINT
