@@ -51,6 +51,8 @@ struct whisper_params {
     std::string fname_out;
     std::string commands;
     std::string prompt;
+
+    std::string get_endpoint;
 };
 
 void whisper_print_usage(int argc, char ** argv, const whisper_params & params);
@@ -80,6 +82,7 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
         else if (arg == "-f"   || arg == "--file")          { params.fname_out     = argv[++i]; }
         else if (arg == "-cmd" || arg == "--commands")      { params.commands      = argv[++i]; }
         else if (arg == "-p"   || arg == "--prompt")        { params.prompt        = argv[++i]; }
+        else if (arg == "-g"   || arg == "--get_endpoint")  { params.get_endpoint  = argv[++i]; }
         else {
             fprintf(stderr, "error: unknown argument: %s\n", arg.c_str());
             whisper_print_usage(argc, argv, params);
@@ -113,6 +116,7 @@ void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & para
     fprintf(stderr, "  -f FNAME,   --file FNAME     [%-7s] text output file name\n",                       params.fname_out.c_str());
     fprintf(stderr, "  -cmd FNAME, --commands FNAME [%-7s] text file with allowed commands\n",             params.commands.c_str());
     fprintf(stderr, "  -p,         --prompt         [%-7s] the required activation prompt\n",              params.prompt.c_str());
+    fprintf(stderr, "  -g,         --get_endpoint   [%-7s] optional get endpoint to send command\n",       params.get_endpoint.c_str());
     fprintf(stderr, "\n");
 }
 
@@ -506,38 +510,40 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
                 //fprintf(stdout, "command size: %i\n", command_length);
 
                 if ((sim > 0.7f) && (command.size() > 0)) {
-                    try
-                    {
-                        CURL *curl = curl_easy_init();
-                        if(curl) {
-                          char *output = curl_easy_escape(curl, command.c_str(), command.size());
-                          if(output) {
-                            printf("Encoded: %s\n", output);
+                    if (params.get_endpoint.size() > 0) {
+                        try
+                        {
+                            CURL *curl = curl_easy_init();
+                            if(curl) {
+                              char *output = curl_easy_escape(curl, command.c_str(), command.size());
+                              if(output) {
+                                printf("Encoded: %s\n", output);
 
-                            std::string outputString = output;
+                                std::string outputString = output;
 
-                            curlpp::Cleanup cleaner;
-                            curlpp::Easy request;
+                                curlpp::Cleanup cleaner;
+                                curlpp::Easy request;
 
-                            // Setting the URL to retrive.
-                            request.setOpt(new curlpp::options::Url("http://127.0.0.1:8080/get_prompt_response?prompt="+outputString));
+                                // Setting the URL to retrive.
+                                request.setOpt(new curlpp::options::Url(params.get_endpoint+outputString));
 
-                            std::cout << request << std::endl;
+                                std::cout << request << std::endl;
 
-                            curl_free(output);
-                          }
-                          curl_easy_cleanup(curl);
+                                curl_free(output);
+                              }
+                              curl_easy_cleanup(curl);
+                            }
                         }
-                    }
 
-                    catch(curlpp::RuntimeError & e)
-                    {
-                        std::cout << e.what() << std::endl;
-                    }
+                        catch(curlpp::RuntimeError & e)
+                        {
+                            std::cout << e.what() << std::endl;
+                        }
 
-                    catch(curlpp::LogicError & e)
-                    {
-                        std::cout << e.what() << std::endl;
+                        catch(curlpp::LogicError & e)
+                        {
+                            std::cout << e.what() << std::endl;
+                        }
                     }
 
                     fprintf(stdout, "%s: Command '%s%s%s', (t = %d ms)\n", __func__, "\033[1m", command.c_str(), "\033[0m", (int) t_ms);
