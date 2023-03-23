@@ -32,3 +32,7 @@ WORKDIR /root/speech_commands
 RUN bash ./models/download-ggml-model.sh base.en && bash ./models/download-ggml-model.sh tiny.en
 
 RUN cmake . && make
+
+RUN chmod +x entrypoint.sh
+
+CMD [ "/bin/bash", "-c", "/root/speech_commands/entrypoint.sh" ]
