@@ -12,4 +12,4 @@ signalListener() {
     done
 }
 
-signalListener ./speech_commands -pms 200 -p "Jarvis" -t 10 -c 2
+signalListener ./speech_commands -c CAPTURE_DEVICE_ID -pms PROMPT_DURATION -cms COMMAND_DURATION -p PROMPT -t THREADS -g GET_ENDPOINT
