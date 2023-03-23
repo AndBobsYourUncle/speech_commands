@@ -471,9 +471,9 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         if (ask_prompt) {
-            fprintf(stdout, "\n");
-            fprintf(stdout, "%s: The prompt is: '%s%s%s'\n", __func__, "\033[1m", k_prompt.c_str(), "\033[0m");
-            fprintf(stdout, "\n");
+            fprintf(stderr, "\n");
+            fprintf(stderr, "%s: The prompt is: '%s%s%s'\n", __func__, "\033[1m", k_prompt.c_str(), "\033[0m");
+            fprintf(stderr, "\n");
 
             ask_prompt = false;
         }
@@ -482,7 +482,7 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
             audio.get(2000, pcmf32_cur);
 
             if (::vad_simple(pcmf32_cur, WHISPER_SAMPLE_RATE, 1000, params.vad_thold, params.freq_thold, params.print_energy)) {
-                fprintf(stdout, "%s: Speech detected! Processing ...\n", __func__);
+                fprintf(stderr, "%s: Speech detected! Processing ...\n", __func__);
 
                 int64_t t_ms = 0;
 
@@ -507,7 +507,7 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
                 const float sim = similarity(prompt, k_prompt);
 
                 //debug
-                //fprintf(stdout, "command size: %i\n", command_length);
+                //fprintf(stderr, "command size: %i\n", command_length);
 
                 if ((sim > 0.7f) && (command.size() > 0)) {
                     if (params.get_endpoint.size() > 0) {
@@ -546,10 +546,10 @@ int always_prompt_transcription(struct whisper_context * ctx, audio_async & audi
                         }
                     }
 
-                    fprintf(stdout, "%s: Command '%s%s%s', (t = %d ms)\n", __func__, "\033[1m", command.c_str(), "\033[0m", (int) t_ms);
+                    fprintf(stderr, "%s: Command '%s%s%s', (t = %d ms)\n", __func__, "\033[1m", command.c_str(), "\033[0m", (int) t_ms);
                 }
 
-                fprintf(stdout, "\n");
+                fprintf(stderr, "\n");
 
                 audio.clear();
             }
